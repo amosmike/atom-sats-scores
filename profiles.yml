@@ -1,0 +1,10 @@
+atom_sats:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: atom-analytics-candidates
+      dataset: "{{ env_var('DBT_DATASET', 'michael_amos') }}"
+      location: "{{ env_var('DBT_BQ_LOCATION', 'europe-west2') }}"
+      threads: 4 # This is the number of threads dbt will use to run models in parallel.

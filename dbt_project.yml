@@ -1,0 +1,41 @@
+name: atom_sats
+version: "1.0.0"
+profile: atom_sats
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+models:
+  atom_sats:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  atom_sats:
+    +column_types:
+      subject_name: string
+      pct_correct: int64
+      sats_score: int64
+      gov_uk_table_year: int64
+
+vars:
+  # Point-in-time cutoff. Leave unset (null) for "as of now" — a normal run scores every sitting
+  # that has finished. Pass a date via --vars to recompute a pupil's score as it stood on that date.
+  as_at_date: null
+
+  # How late an answer can be logged after its sitting's finish time before we treat it as a data
+  # quality flag rather than rounding. See README "Data quality issues".
+  late_answer_tolerance_seconds: 2
+
+  # The subjects this pipeline produces a SATs score for. A fixed list, not a computed one: we
+  # checked pupil counts once at design time (150+ for these two, 3-8 for the others, and
+  # Screeners/Wellbeing aren't attainment tests at all) and wrote the decision down here.
+  # See README "What we score".
+  scored_subjects: ["English", "Maths"]

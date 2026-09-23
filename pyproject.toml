@@ -1,0 +1,14 @@
+[project]
+name = "atom-learning"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "db-dtypes>=1.7.1",
+    "dbt-bigquery>=1.12.1",
+    "google-cloud-bigquery>=3.45.2",
+    "ipykernel>=7.3.0",
+    "jupyter>=1.1.1",
+    "pandas>=3.0.6",
+    "sqlfluff>=4.3.0",
+    "sqlfluff-templater-dbt>=4.3.0",
+]
