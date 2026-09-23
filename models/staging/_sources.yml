@@ -1,0 +1,71 @@
+version: 2
+
+sources:
+  - name: de_raw
+    database: atom-analytics-candidates
+    schema: de_raw
+    tables:
+      - name: responses
+        description: One row per question a pupil answered.
+        columns:
+          - name: response_id
+            tests: [unique, not_null]
+          - name: pupil_id
+            tests: [not_null]
+          - name: session_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('de_raw', 'assessment_sittings')
+                    field: session_id
+                  config:
+                    severity: warn
+                    # Known and handled, not a failure: see README "How we recover answers with
+                    # no sitting record". This stays a warning so the count is still visible.
+          - name: question_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('de_raw', 'course_hierarchy')
+                    field: question_id
+          - name: is_correct
+            tests: [not_null]
+          - name: is_no_attempt
+            tests: [not_null]
+          - name: answered_at
+            tests: [not_null]
+
+      - name: assessment_sittings
+        description: One row per assessment a pupil sat.
+        columns:
+          - name: session_id
+            tests: [unique, not_null]
+          - name: pupil_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('de_raw', 'pupils')
+                    field: pupil_id
+          - name: is_complete
+            tests: [not_null]
+          - name: is_deleted
+            tests: [not_null]
+
+      - name: pupils
+        description: One row per pupil.
+        columns:
+          - name: pupil_id
+            tests: [unique, not_null]
+          - name: is_deleted
+            tests: [not_null]
+
+      - name: course_hierarchy
+        description: One row per question, placing it in the subject hierarchy.
+        columns:
+          - name: question_id
+            tests: [unique, not_null]
+          - name: subject_name
+            tests: [not_null]
