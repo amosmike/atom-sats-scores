@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: fct_pupil_subject_scores
+    description: >
+      A SATs-style score (80-120), or the reason there isn't one, for every pupil in every scored
+      subject. One row per pupil x subject. See README for the full design.
+    columns:
+      - name: pupil_id
+        tests: [not_null]
+      - name: subject_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: "{{ var('scored_subjects') }}"
+      - name: score_reason
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["scored", "no_answers"]
+      - name: calibration_reason
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["calibrated", "no_answers", "outside_screener_years", "partly_outside_screener_years"]
+      - name: sats_score_calibrated
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 80
+                max_value: 120
+                inclusive: true
+      - name: sats_score
+        tests:
+          # Only fires on non-null values, so a null sats_score (score_reason != 'scored') never
+          # trips this — see README "What we score".
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 80
+                max_value: 120
+                inclusive: true
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [pupil_id, subject_name]
+
+  - name: fct_year_group_calibration
+    description: >
+      Diagnostic: how evenly are each year group's English/Maths papers pitched, measured against the
+      Screener battery as a common ruler. One row per year group (Y3-Y6 only — Screeners aren't sat
+      below Y3). Not applied to fct_pupil_subject_scores; see README for why.
+    columns:
+      - name: year_group
+        tests: [unique, not_null]
+      - name: pupils
+        tests: [not_null]
+      - name: offset_pct_points
+        tests: [not_null]

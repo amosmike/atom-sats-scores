@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: int_responses_deduped
+    description: One row per (session_id, question_id) after collapsing duplicate copies.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [session_id, question_id]
+
+  - name: int_sittings_resolved
+    description: One row per sitting (real or recovered) that counts towards a score, as at this run.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [session_id]
+
+  - name: int_pupil_screener_scores
+    description: >
+      One row per pupil who sat the Screener battery — the only instrument sat by every year group
+      with the same questions, so the one thing comparable across year groups.
+    columns:
+      - name: pupil_id
+        tests: [unique, not_null]
+      - name: year_group
+        tests: [not_null]
+
+  - name: int_year_group_calibration
+    description: >
+      Per year group: how far its English/Maths papers sit above or below what Screener scores
+      predict. Positive offset means papers pitched easy. Consumed by both marts.
+    columns:
+      - name: year_group
+        tests: [unique, not_null]
+      - name: offset_pct_points
+        tests: [not_null]
